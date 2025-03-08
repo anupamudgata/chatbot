@@ -1,4 +1,5 @@
 from openai import OpenAI
+from bot.openai_helper import OpenAIHelper
 import time
 
 class OpenAIHelper:
