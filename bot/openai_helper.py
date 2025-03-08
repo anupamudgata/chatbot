@@ -33,7 +33,7 @@ class OpenAIHelper:
             return True
         except Exception as e:
             print(f"Error validating API key: {e}")
-            return False
+            return False, str(e)  # Return the error message for debugging
     
     def is_api_key_valid(self):
         """
@@ -48,7 +48,8 @@ class OpenAIHelper:
         try:
             self.client.models.list()
             return True
-        except:
+        except Exception as e:
+            print(f"API key validation failed: {e}")
             return False
     
     def generate_response(self, messages, model="gpt-3.5-turbo", temperature=0.7):
@@ -64,7 +65,8 @@ class OpenAIHelper:
             str: The generated response text
         """
         if not self.is_api_key_valid():
-            return "Please provide a valid OpenAI API key in the sidebar."
+            yield "Please provide a valid OpenAI API key in the sidebar. If you've already provided a key, it may be invalid or expired."
+            return
         
         try:
             response = self.client.chat.completions.create(
