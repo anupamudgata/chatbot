@@ -27,6 +27,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def main():
+    # Initialize session state for messages if it doesn't exist
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    
     # Initialize the UI and OpenAI helper
     chat_ui = ChatUI()
     openai_helper = OpenAIHelper()
@@ -36,14 +40,25 @@ def main():
     
     # Update the API key in the OpenAI helper
     if api_key:
-        st.sidebar.info(f"Validating API key...")
-        is_valid = openai_helper.set_api_key(api_key)
-        if not is_valid:
-            st.sidebar.error("Invalid API key. Please check and try again.")
-        else:
-            st.sidebar.success("API key validated successfully!")
-            # Store the validated key in session state
-            if "validated_api_key" not in st.session_state:
+        # Check if this is a new key or different from the stored one
+        if "current_api_key" not in st.session_state or st.session_state.current_api_key != api_key:
+            st.session_state.current_api_key = api_key
+            st.sidebar.info(f"Validating API key...")
+            is_valid = openai_helper.set_api_key(api_key)
+            
+            if not is_valid:
+                st.sidebar.error("Invalid API key. Please check and try again.")
+                # Add troubleshooting info
+                with st.sidebar.expander("Troubleshooting"):
+                    st.markdown("""
+                    - Make sure your API key starts with 'sk-'
+                    - Check that your OpenAI account has sufficient credits
+                    - Verify that your API key hasn't expired
+                    - Try generating a new API key from the OpenAI dashboard
+                    """)
+            else:
+                st.sidebar.success("API key validated successfully!")
+                # Store the validated key in session state
                 st.session_state.validated_api_key = api_key
     
     # Main chat interface
