@@ -1,4 +1,4 @@
-import openai
+from openai import OpenAI
 import time
 
 class OpenAIHelper:
@@ -10,8 +10,9 @@ class OpenAIHelper:
             api_key (str, optional): OpenAI API key. Defaults to None.
         """
         self.api_key = api_key
+        self.client = None
         if api_key:
-            openai.api_key = api_key
+            self.client = OpenAI(api_key=api_key)
     
     def set_api_key(self, api_key):
         """
@@ -25,9 +26,9 @@ class OpenAIHelper:
         """
         try:
             self.api_key = api_key
-            openai.api_key = api_key
+            self.client = OpenAI(api_key=api_key)
             # Make a simple API call to validate the key
-            openai.Model.list()
+            self.client.models.list()
             return True
         except Exception as e:
             print(f"Error validating API key: {e}")
@@ -40,11 +41,11 @@ class OpenAIHelper:
         Returns:
             bool: True if the API key is valid, False otherwise
         """
-        if not self.api_key:
+        if not self.api_key or not self.client:
             return False
         
         try:
-            openai.Model.list()
+            self.client.models.list()
             return True
         except:
             return False
@@ -65,7 +66,7 @@ class OpenAIHelper:
             return "Please provide a valid OpenAI API key in the sidebar."
         
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=temperature,
@@ -73,17 +74,9 @@ class OpenAIHelper:
             )
             
             # For streaming response
-            collected_chunks = []
-            collected_messages = []
-            
             for chunk in response:
-                collected_chunks.append(chunk)
-                chunk_message = chunk['choices'][0]['delta']
-                collected_messages.append(chunk_message)
-                
-                # Yield the content if available
-                if 'content' in chunk_message:
-                    yield chunk_message.get('content', '')
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
                     time.sleep(0.02)  # Small delay for smoother streaming
                 
         except Exception as e:
