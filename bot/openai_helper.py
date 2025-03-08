@@ -1,6 +1,6 @@
 from openai import OpenAI
-
 import time
+import sys
 
 class OpenAIHelper:
     def __init__(self, api_key=None):
@@ -12,8 +12,11 @@ class OpenAIHelper:
         """
         self.api_key = api_key
         self.client = None
-        if api_key:
-            self.client = OpenAI(api_key=api_key)
+        try:
+            if api_key:
+                self.client = OpenAI(api_key=api_key)
+        except Exception as e:
+            print(f"Error initializing OpenAI client: {e}", file=sys.stderr)
     
     def set_api_key(self, api_key):
         """
@@ -47,10 +50,12 @@ class OpenAIHelper:
             return False
         
         try:
-            self.client.models.list()
+            models = self.client.models.list()
+            # Add debug print to verify models are being retrieved
+            print(f"Models retrieved successfully: {len(models.data)} models found")
             return True
         except Exception as e:
-            print(f"API key validation failed: {e}")
+            print(f"API key validation failed: {e}", file=sys.stderr)
             return False
     
     def generate_response(self, messages, model="gpt-3.5-turbo", temperature=0.7):
