@@ -2,6 +2,7 @@ import openai
 import time
 import sys
 import requests
+from openai import OpenAI
 
 class OpenAIHelper:
     def __init__(self, api_key=None):
@@ -12,10 +13,11 @@ class OpenAIHelper:
             api_key (str, optional): OpenAI API key. Defaults to None.
         """
         self.api_key = api_key
+        self.client = None
         if api_key:
             try:
                 print(f"Attempting to initialize OpenAI client...", file=sys.stderr)
-                openai.api_key = api_key
+                self.client = OpenAI(api_key=api_key)
                 print("OpenAI client initialized successfully", file=sys.stderr)
             except Exception as e:
                 print(f"Error initializing OpenAI client: {e}", file=sys.stderr)
@@ -46,7 +48,7 @@ class OpenAIHelper:
             if response.status_code == 200:
                 print("API key validated successfully with direct request", file=sys.stderr)
                 self.api_key = api_key
-                openai.api_key = api_key
+                self.client = OpenAI(api_key=api_key)
                 return True
             else:
                 print(f"API key validation failed: {response.status_code} - {response.text}", file=sys.stderr)
@@ -63,11 +65,11 @@ class OpenAIHelper:
         Returns:
             bool: True if the API key is valid, False otherwise
         """
-        if not self.api_key:
+        if not self.api_key or not self.client:
             return False
         
         try:
-            models = openai.Model.list()
+            models = self.client.models.list()
             # Add debug print to verify models are being retrieved
             print(f"Models retrieved successfully")
             return True
@@ -92,7 +94,7 @@ class OpenAIHelper:
             return
         
         try:
-            response = openai.ChatCompletion.create(
+            response = self.client.chat.completions.create(
                 model=model,
                 messages=messages,
                 temperature=temperature,
@@ -101,8 +103,8 @@ class OpenAIHelper:
             
             # For streaming response
             for chunk in response:
-                if 'choices' in chunk and chunk['choices'][0].get('delta', {}).get('content'):
-                    yield chunk['choices'][0]['delta']['content']
+                if chunk.choices and chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
                     time.sleep(0.02)  # Small delay for smoother streaming
                 
         except Exception as e:
