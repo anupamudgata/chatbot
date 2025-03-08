@@ -46,5 +46,9 @@ A simple chatbot application built with Streamlit that allows users to chat with
 
 ## Note
 
+<<<<<<< HEAD
 This application requires an OpenAI API key to function. You can get one by signing up at [OpenAI's website](https://platform.openai.com/).
 >>>>>>> e064f1d (Initial commit of OpenAI Chatbot)
+=======
+This application requires an OpenAI API key to function. You can get one by signing up at [OpenAI's website](https://platform.openai.com/).# chatbot
+>>>>>>> fe0c32a (Initial commit of OpenAI chatbot)
