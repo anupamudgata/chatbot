@@ -55,11 +55,6 @@ class ChatUI:
             # Clear chat button
             if st.button("Clear Chat History"):
                 st.session_state.messages = []
-                
-                # Replace this line:
-                # st.experimental_rerun()
-                
-                # With this line:
                 st.rerun()
                 
             st.divider()
