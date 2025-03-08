@@ -114,3 +114,4 @@ class ChatUI:
         
         # Add the full response to the message history
         self.add_message("assistant", full_response)
+
