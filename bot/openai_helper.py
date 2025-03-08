@@ -33,7 +33,8 @@ class OpenAIHelper:
             return True
         except Exception as e:
             print(f"Error validating API key: {e}")
-            return False, str(e)  # Return the error message for debugging
+            # Just return False, not a tuple
+            return False
     
     def is_api_key_valid(self):
         """
