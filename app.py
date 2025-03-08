@@ -1,6 +1,7 @@
 import streamlit as st
 from bot.openai_helper import OpenAIHelper
 from chat.ui import ChatUI
+import sys
 
 # Set page configuration
 st.set_page_config(
@@ -35,9 +36,15 @@ def main():
     
     # Update the API key in the OpenAI helper
     if api_key:
+        st.sidebar.info(f"Validating API key...")
         is_valid = openai_helper.set_api_key(api_key)
         if not is_valid:
             st.sidebar.error("Invalid API key. Please check and try again.")
+        else:
+            st.sidebar.success("API key validated successfully!")
+            # Store the validated key in session state
+            if "validated_api_key" not in st.session_state:
+                st.session_state.validated_api_key = api_key
     
     # Main chat interface
     st.title("OpenAI Chatbot")
@@ -58,10 +65,15 @@ def main():
         with st.chat_message("user"):
             st.markdown(user_message)
         
+        # Use the validated key from session state if available
+        if "validated_api_key" in st.session_state:
+            openai_helper.set_api_key(st.session_state.validated_api_key)
+        
         # Check if API key is valid before generating response
         if not openai_helper.is_api_key_valid():
             with st.chat_message("assistant"):
                 st.error("Please provide a valid OpenAI API key in the sidebar.")
+                st.info("Note: Make sure your API key starts with 'sk-' and has sufficient credits.")
         else:
             # Prepare messages for OpenAI API
             messages = [
