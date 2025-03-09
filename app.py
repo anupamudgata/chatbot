@@ -30,10 +30,19 @@ def main():
     chat_ui = ChatUI()
     openai_helper = OpenAIHelper()
     
+    # Check for API key in Streamlit secrets
+    if 'openai' in st.secrets and 'api_key' in st.secrets['openai'] and st.secrets['openai']['api_key']:
+        api_key = st.secrets['openai']['api_key']
+        is_valid = openai_helper.set_api_key(api_key)
+        if is_valid:
+            st.sidebar.success("Using API key from Streamlit secrets")
+        else:
+            st.sidebar.error("API key from Streamlit secrets is invalid. Please check your Streamlit Cloud settings.")
+    
     # Set up the sidebar and get user settings
     api_key, model, temperature = chat_ui.setup_sidebar()
     
-    # Update the API key in the OpenAI helper
+    # Update the API key in the OpenAI helper if provided by user
     if api_key:
         is_valid = openai_helper.set_api_key(api_key)
         if not is_valid:
@@ -61,7 +70,7 @@ def main():
         # Check if API key is valid before generating response
         if not openai_helper.is_api_key_valid():
             with st.chat_message("assistant"):
-                st.error("Please provide a valid OpenAI API key in the sidebar.")
+                st.error("Please provide a valid OpenAI API key in the sidebar or configure it in Streamlit Cloud secrets.")
         else:
             # Prepare messages for OpenAI API
             messages = [
